@@ -1,12 +1,16 @@
 Study Alarm 설치 안내 (Android)
-1. ZIP 압축을 풀고 index.html, manifest.webmanifest, sw.js, icon.svg를 HTTPS 웹호스팅에 올립니다.
+1. ZIP 압축을 풀고 index.html, manifest.webmanifest, sw.js, icon.svg, Study_Alarm_Calendar.ics를 HTTPS 웹호스팅에 올립니다.
 2. 안드로이드 Chrome에서 배포된 HTTPS 주소를 엽니다.
 3. 메뉴(⋮) > 앱 설치 또는 홈 화면에 추가를 누릅니다.
 4. 앱을 열고 '알람 설정' > '알림 권한 허용'을 누릅니다.
-5. 공부 알람이 정확히 울려야 하는 경우 함께 제공된 Study_Alarm_Calendar.ics를 Google 캘린더에 가져오고 캘린더 알림도 켭니다.
+5. 공부 알람이 정확히 울려야 하는 경우 함께 제공된 Study_Alarm_Calendar.ics를 Google 캘린더에 가져오고 캘린더 알림도 켭니다. (앱의 '알람 설정' 탭에서도 내려받을 수 있습니다.)
+
+백업과 복원:
+- '학습 현황' > '학습 기록 백업하기'로 study-alarm-backup.json 파일을 내려받습니다.
+- '학습 현황' > '백업 파일로 복원하기'로 그 JSON 파일을 다시 불러오면 체크 기록과 알람 설정이 복원됩니다.
 
 중요한 제한:
-- 이 PWA의 자체 알람은 앱이 실행 중인 동안 브라우저 타이머로 동작합니다.
+- 이 PWA의 자체 알람은 앱이 실행 중인 동안 브라우저 타이머로 동작합니다. 타이머가 조금 늦게 돌아도 설정 시각 이후 5분 안이면 한 번은 알림이 표시됩니다.
 - 앱이 완전히 종료되거나 Android 절전/백그라운드 제한이 적용되면 알림이 지연되거나 누락될 수 있습니다.
 - 정각 알람을 보장하려면 ICS를 Google 캘린더에 가져와 캘린더 알림을 병행하세요.
 - 앱의 학습 체크 및 알람 설정은 현재 브라우저의 로컬 저장소에 저장됩니다.

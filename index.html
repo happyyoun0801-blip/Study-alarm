@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#172554">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Study Alarm · 시험 합격 프로젝트</title>
+<style>
+:root{--navy:#172554;--blue:#2563eb;--bg:#f3f6fb;--card:#fff;--muted:#64748b;--line:#e2e8f0;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#172033;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+header{background:linear-gradient(135deg,#172554,#1d4ed8);color:white;padding:22px 18px 26px;border-radius:0 0 24px 24px}
+h1{font-size:22px;margin:0 0 5px}.sub{opacity:.85;font-size:13px}
+.wrap{max-width:760px;margin:auto;padding:14px 14px 40px}
+.examgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.exam{background:#ffffff18;border:1px solid #ffffff30;border-radius:14px;padding:11px 8px}
+.exam b{display:block;font-size:12px}.exam strong{display:block;font-size:21px;margin:4px 0}.exam small{font-size:11px;opacity:.85}
+.tabs{display:flex;gap:8px;margin:14px 0;overflow:auto}
+.tab{border:0;border-radius:999px;padding:10px 15px;background:#e2e8f0;color:#334155;font-weight:700;white-space:nowrap}
+.tab.active{background:var(--navy);color:white}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #0f172a08}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h2{font-size:17px;margin:0 0 12px}h3{font-size:14px;margin:0}
+.muted{color:var(--muted);font-size:12px}
+button,select,input{font:inherit}
+.primary{border:0;background:var(--blue);color:white;border-radius:12px;padding:11px 14px;font-weight:700}
+.secondary{border:1px solid var(--line);background:white;color:#334155;border-radius:12px;padding:10px 12px;font-weight:650}
+.datebar{display:flex;align-items:center;gap:8px}.datebar input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:10px;background:white}
+.progress{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin:10px 0}.progress>div{height:100%;background:#16a34a;width:0}
+.task{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}.task input{width:19px;height:19px;margin-top:1px;accent-color:var(--green)}
+.task label{flex:1}.task.done label{text-decoration:line-through;color:#94a3b8}
+.time{font-size:12px;color:var(--blue);font-weight:800;min-width:92px}
+.pill{font-size:11px;border-radius:999px;padding:5px 8px;background:#eff6ff;color:#1d4ed8;font-weight:700}
+.alarmrow{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.alarmrow:last-child{border:0}.switch{width:44px;height:25px;accent-color:var(--blue)}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#f8fafc;border-radius:12px;padding:12px}.stat strong{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
+.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:12px;font-size:12px;line-height:1.55}
+.off{background:#f1f5f9;color:#475569;border-radius:12px;padding:14px;text-align:center}
+footer{text-align:center;color:#94a3b8;font-size:11px;padding:20px}
+.hidden{display:none!important}
+@media(max-width:390px){.exam strong{font-size:18px}.exam{padding:9px 6px}.time{min-width:78px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="sub">2026.11.23 — 2027.02.13</div>
+  <h1>Study Alarm</h1>
+  <div class="sub">세 가지 시험, 하루씩 꾸준하게</div>
+  <div class="examgrid">
+    <div class="exam"><b>JPT</b><strong id="jpt-dday">D-</strong><small>1/24 · 목표 500+</small></div>
+    <div class="exam"><b>TOEIC</b><strong id="toeic-dday">D-</strong><small>1/31 · 목표 700</small></div>
+    <div class="exam"><b>한능검</b><strong id="hist-dday">D-</strong><small>2/13 · 목표 1급</small></div>
+  </div>
+</header>
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab active" data-tab="today">오늘 일정</button>
+    <button class="tab" data-tab="calendar">날짜별 계획</button>
+    <button class="tab" data-tab="alarms">알람 설정</button>
+    <button class="tab" data-tab="progress">학습 현황</button>
+  </nav>
+
+  <section id="today" class="panel">
+    <div class="card">
+      <div class="row"><h2>오늘의 공부</h2><span class="pill" id="phase-pill">학습 기간</span></div>
+      <div class="datebar"><button class="secondary" id="prevday">‹</button><input type="date" id="todaydate"><button class="secondary" id="nextday">›</button></div>
+      <p class="muted" id="day-desc"></p>
+      <div id="today-tasks"></div>
+      <div class="progress"><div id="today-progress"></div></div>
+      <div class="row"><span class="muted" id="today-count">0/0 완료</span><button class="secondary" id="reset-day">오늘 체크 초기화</button></div>
+    </div>
+    <div class="card">
+      <h2>다음 알람</h2><div id="next-alarm" class="muted">알람을 계산하고 있어요.</div>
+    </div>
+    <div class="notice">알림을 받으려면 알람 설정에서 알림 권한을 허용하고 앱을 열어 두세요. 브라우저·안드로이드 절전 정책에 따라 앱을 완전히 종료하면 알림이 지연되거나 전달되지 않을 수 있어요.</div>
+  </section>
+
+  <section id="calendar" class="panel hidden">
+    <div class="card">
+      <h2>날짜별 학습 계획</h2>
+      <div class="datebar"><button class="secondary" id="cal-prev">‹</button><input type="date" id="caldate"><button class="secondary" id="cal-next">›</button></div>
+      <div id="calendar-detail"></div>
+    </div>
+  </section>
+
+  <section id="alarms" class="panel hidden">
+    <div class="card">
+      <h2>알람 및 알림</h2>
+      <p class="muted">각 공부 블록의 시작 시간에 알림을 표시합니다. 시간을 바꾸면 이 기기에 저장됩니다.</p>
+      <div class="row" style="margin:12px 0"><button class="primary" id="enable-notify">알림 권한 허용</button><span class="muted" id="permission-status">권한 확인 전</span></div>
+      <div id="alarm-settings"></div>
+      <button class="secondary" id="save-alarms" style="width:100%;margin-top:12px">알람 설정 저장</button>
+    </div>
+    <div class="card">
+      <h2>알람 작동 테스트</h2>
+      <p class="muted">버튼을 누르면 즉시 테스트 알림을 표시합니다.</p>
+      <button class="primary" id="test-alarm">테스트 알림 보내기</button>
+    </div>
+    <div class="notice">중요: 이 웹앱은 서버에서 예약 푸시를 보내는 방식이 아닙니다. 앱을 열어 둔 동안 동작하는 알람이며, 화면 잠금·백그라운드 제한·앱 종료 상황에서 정확한 알람을 보장하지 않습니다. 정해진 시간에 꼭 울려야 하는 알람은 함께 제공하는 캘린더 일정 파일을 Google 캘린더에 가져와 사용하세요.</div>
+  </section>
+
+  <section id="progress" class="panel hidden">
+    <div class="card">
+      <h2>전체 학습 현황</h2>
+      <div class="statgrid">
+        <div class="stat"><strong id="total-done">0</strong><span>완료한 학습</span></div>
+        <div class="stat"><strong id="total-tasks">0</strong><span>전체 학습 항목</span></div>
+        <div class="stat"><strong id="completion">0%</strong><span>완료율</span></div>
+      </div>
+      <div class="progress"><div id="overall-progress"></div></div>
+      <div id="subject-progress"></div>
+    </div>
+    <div class="card">
+      <h2>데이터 관리</h2>
+      <p class="muted">학습 체크와 알람 설정은 현재 브라우저에 저장됩니다. 브라우저 데이터를 지우면 기록도 사라질 수 있어요.</p>
+      <button class="secondary" id="export-data">학습 기록 백업하기</button>
+      <button class="secondary" id="clear-data">전체 학습 기록 초기화</button>
+    </div>
+  </section>
+  <footer>Study Alarm · 개인 학습 관리용 · 일정은 직접 수정해 사용할 수 있습니다.</footer>
+</div>
+<script>
+const START='2026-11-23', END='2027-02-13';
+const EXAMS={jpt:'2027-01-24',toeic:'2027-01-31',hist:'2027-02-13'};
+const topics=[
+['히라가나·가타카나 / 영어 기초 문법 / 선사시대'],
+['기초 일본어 문장·조사 / 영어 기본 단어 / 삼국·남북국'],
+['동사·형용사 활용 / 토익 문장 구조 / 고려'],
+['일본어 문법·한자 / 시제·품사 / 조선 전기'],
+['기초 회화·청해 / 토익 문법 / 조선 후기'],
+['청해·독해 유형 / LC·RC 파트별 연습 / 개항·근대 개혁'],
+['JPT 청해·독해 / 토익 파트별 문제 / 일제강점기'],
+['실전 유형 적응 / LC·RC 시간 관리 / 현대사'],
+['JPT 모의고사·오답 / 토익 실전 유형 / 한국사 전 범위 복습'],
+['JPT 최종 마무리 / 토익 유지 학습 / 한국사 기출 반복'],
+['토익 실전·오답 / 한능검 전근대 기출'],
+['토익 실전·오답 / 한능검 근현대 기출'],
+['한능검 전 범위 기출·오답']
+];
+const weekDetails=[
+['히라가나','기초 영어 문법','선사시대'],
+['가타카나·기초 문장','기본 단어','고조선·삼국'],
+['명사·형용사·조사','문장 구조·시제','남북국·고려'],
+['동사 ます형·과거형','품사·수일치','조선 전기'],
+['조사·기초 한자','전치사·부정사','임진왜란·병자호란'],
+['회화·기초 청해','LC Part 1~3·RC Part 5','조선 후기·개항'],
+['청해·독해 파트별 연습','LC Part 3~4·RC Part 5~7','근대·일제강점기'],
+['청해·독해 실전','LC·RC 실전 유형','독립운동·현대사'],
+['모의고사·오답 분석','LC·RC 시간 관리','전 범위 기출'],
+['JPT 최종 모의고사','토익 감각 유지','전 범위 핵심 복습'],
+['시험 후 JPT 종료','토익 집중 모의고사','전근대 기출'],
+['시험 후 토익 종료','토익 집중 모의고사','근현대 기출'],
+['시험 종료','시험 종료','전 범위 최종 정리']
+];
+const $=id=>document.getElementById(id);
+const parse=s=>new Date(s+'T12:00:00');
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const diff=(a,b)=>Math.round((parse(b)-parse(a))/86400000);
+const todayISO=()=>iso(new Date());
+const clampDate=s=>s<START?START:s>END?END:s;
+let selected=clampDate(todayISO());
+let checks=JSON.parse(localStorage.getItem('studyChecks')||'{}');
+let alarms=JSON.parse(localStorage.getItem('studyAlarms')||'null')||[
+{time:'09:00',name:'JPT 공부 시작',enabled:true},
+{time:'13:00',name:'토익 공부 시작',enabled:true},
+{time:'17:00',name:'한능검 공부 시작',enabled:true},
+{time:'20:00',name:'JPT 복습 시작',enabled:true}
+];
+let fired=new Set();
+function phase(d){
+ if(d>='2026-11-23'&&d<='2027-01-17')return 0;
+ if(d>='2027-01-18'&&d<='2027-01-23')return 1;
+ if(d>='2027-01-25'&&d<='2027-01-30')return 2;
+ return 3;
+}
+function getTasks(d){
+ const date=parse(d),dow=date.getDay(),p=phase(d);
+ if(d==='2027-01-24')return [{subject:'JPT',time:'시험일',title:'JPT 시험 응시',detail:'목표 500점 이상'}];
+ if(d==='2027-01-31')return [{subject:'TOEIC',time:'시험일',title:'토익 시험 응시',detail:'목표 700점'}];
+ if(d==='2027-02-13')return [{subject:'한능검',time:'시험일',title:'한국사능력검정시험 심화 응시',detail:'목표 1급'}];
+ if(dow===0)return [];
+ let week=Math.max(0,Math.floor(diff(START,d)/7));
+ const topic=weekDetails[Math.min(week,12)];
+ if(p===0){
+  if(dow===6)return [
+   {subject:'JPT',time:'09:00–10:30',title:'JPT 주간 복습',detail:topic[0]},
+   {subject:'TOEIC',time:'10:30–12:00',title:'토익 주간 복습',detail:topic[1]},
+   {subject:'한능검',time:'13:00–14:00',title:'한능검 기출·복습',detail:topic[2]}
+  ];
+  return [
+   {subject:'JPT',time:'09:00–12:00',title:'일본어 기초·문법·어휘',detail:topic[0]},
+   {subject:'TOEIC',time:'13:00–16:00',title:'토익 단어·LC·RC',detail:topic[1]},
+   {subject:'한능검',time:'17:00–19:00',title:'한국사 시대별 학습·기출',detail:topic[2]},
+   {subject:'JPT',time:'20:00–21:00',title:'JPT 청해·복습',detail:'당일 학습 내용 복습'}
+  ];
+ }
+ if(p===1){
+  if(dow===6)return [
+   {subject:'JPT',time:'09:00–11:00',title:'JPT 최종 복습',detail:'가벼운 오답·어휘 복습'},
+   {subject:'TOEIC',time:'11:00–12:00',title:'토익 감각 유지',detail:'단어·LC'},
+   {subject:'한능검',time:'13:00–14:00',title:'한국사 핵심 복습',detail:'시대별 핵심 사건'}
+  ];
+  return [
+   {subject:'JPT',time:'09:00–12:00',title:'JPT 실전·오답 분석',detail:'청해·독해 모의고사'},
+   {subject:'TOEIC',time:'13:00–16:00',title:'토익 LC·RC 유지',detail:'단어·파트별 문제'},
+   {subject:'JPT',time:'17:00–19:00',title:'JPT 약점 집중',detail:'취약 유형 재학습'},
+   {subject:'한능검',time:'20:00–21:00',title:'한국사 핵심 복습',detail:'기출 오답'}
+  ];
+ }
+ if(p===2){
+  if(dow===6)return [
+   {subject:'TOEIC',time:'09:00–12:00',title:'토익 최종 복습',detail:'오답·LC·RC'},
+   {subject:'한능검',time:'13:00–14:00',title:'한국사 기출 복습',detail:'전 범위 핵심 사건'}
+  ];
+  return [
+   {subject:'TOEIC',time:'09:00–12:00',title:'토익 실전 모의고사·LC',detail:'실전 시간 관리'},
+   {subject:'TOEIC',time:'13:00–16:00',title:'토익 RC·오답 분석',detail:'Part 5~7·어휘'},
+   {subject:'한능검',time:'17:00–20:00',title:'한능검 전 범위 기출',detail:'시대별 오답 정리'}
+  ];
+ }
+ if(dow===6)return [
+  {subject:'한능검',time:'09:00–11:00',title:'한국사 기출 모의고사',detail:'50문항·시간 관리'},
+  {subject:'한능검',time:'11:00–13:00',title:'오답·핵심 정리',detail:'문화재·인물·사건'}
+ ];
+ return [
+  {subject:'한능검',time:'09:00–12:00',title:'시대별 핵심 학습',detail:topic[2]},
+  {subject:'한능검',time:'13:00–16:00',title:'기출문제 풀이',detail:'심화 50문항 및 오답 분석'},
+  {subject:'한능검',time:'17:00–19:00',title:'취약 시대·문화재 복습',detail:'틀린 선지 설명하기'}
+ ];
+}
+function renderTasks(d,target='today-tasks'){
+ const tasks=getTasks(d),key=d;
+ if(!tasks.length){$(target).innerHTML='<div class="off">오늘은 휴식일이에요. 충분히 쉬고 다음 공부일을 준비하세요 🌿</div>';return}
+ $(target).innerHTML=tasks.map((t,i)=>{
+  const id=`${key}_${i}`,done=!!checks[id];
+  return `<div class="task ${done?'done':''}"><input type="checkbox" data-id="${id}" ${done?'checked':''}><label><div class="row"><strong>${t.title}</strong><span class="pill">${t.subject}</span></div><div class="muted">${t.detail}</div></label><span class="time">${t.time}</span></div>`;
+ }).join('');
+ $(target).querySelectorAll('input[type=checkbox]').forEach(el=>el.addEventListener('change',e=>{
+  checks[e.target.dataset.id]=e.target.checked;localStorage.setItem('studyChecks',JSON.stringify(checks));renderAll();
+ }));
+}
+function renderToday(){
+ $('todaydate').value=selected;
+ const d=parse(selected),dow=['일','월','화','수','목','금','토'][d.getDay()];
+ $('day-desc').textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${dow})`;
+ $('phase-pill').textContent=selected==='2027-01-24'?'JPT 시험일':selected==='2027-01-31'?'토익 시험일':selected==='2027-02-13'?'한능검 시험일':d.getDay()===0?'휴식일':phase(selected)===0?'기초·실력 향상':phase(selected)===1?'JPT 최종 대비':phase(selected)===2?'토익 최종 대비':'한능검 집중';
+ renderTasks(selected);
+ const tasks=getTasks(selected),done=tasks.filter((t,i)=>checks[`${selected}_${i}`]).length;
+ $('today-count').textContent=`${done}/${tasks.length} 완료`;
+ $('today-progress').style.width=(tasks.length?done/tasks.length*100:0)+'%';
+ updateNextAlarm();
+}
+function renderCalendar(){
+ const d=$('caldate').value||selected; $('calendar-detail').innerHTML='';
+ const tasks=getTasks(d);
+ $('calendar-detail').innerHTML=`<p class="muted">${d}</p>`+(tasks.length?tasks.map(t=>`<div class="alarmrow"><div><b>${t.title}</b><div class="muted">${t.detail}</div></div><span class="time">${t.time}</span></div>`).join(''):'<div class="off">일요일 휴식일</div>');
+}
+function renderAlarms(){
+ $('alarm-settings').innerHTML=alarms.map((a,i)=>`<div class="alarmrow"><div style="flex:1"><b>${a.name}</b><div class="muted">알림 시간</div></div><input type="time" value="${a.time}" data-time="${i}" style="border:1px solid var(--line);border-radius:9px;padding:7px"><input class="switch" type="checkbox" data-enabled="${i}" ${a.enabled?'checked':''}></div>`).join('');
+ $('permission-status').textContent='알림 권한: '+(('Notification'in window)?Notification.permission:'지원 안 됨');
+}
+function updateNextAlarm(){
+ const now=new Date();let next=null;
+ for(let offset=0;offset<8;offset++){
+  const d=new Date(now);d.setDate(now.getDate()+offset);const ds=iso(d);
+  if(d.getDay()===0&&!Object.values(EXAMS).includes(ds))continue;
+  for(const a of alarms.filter(x=>x.enabled)){
+   const [h,m]=a.time.split(':').map(Number);const at=new Date(d);at.setHours(h,m,0,0);
+   if(at>now&&(!next||at<next.at))next={at,a,ds};
+  }
+  if(next)break;
+ }
+ $('next-alarm').textContent=next?`${next.ds} ${next.a.time} · ${next.a.name}`:'오늘 예정된 알람이 없습니다.';
+}
+function notify(title,body){
+ if('Notification'in window&&Notification.permission==='granted'){
+  try{new Notification(title,{body,icon:'icon.svg',tag:'study-alarm'});}catch(e){}
+ }
+}
+function checkAlarms(){
+ const now=new Date(),d=iso(now),key=d+'_'+now.getHours()+':'+now.getMinutes();
+ if(now.getDay()===0&&!Object.values(EXAMS).includes(d))return;
+ if(fired.has(key))return;
+ alarms.filter(a=>a.enabled).forEach(a=>{
+  if(a.time===`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`){
+   fired.add(key);notify('Study Alarm · 공부 시작',a.name+' 시간이에요. 오늘의 학습을 시작해 보세요!');
+  }
+ });
+}
+function renderProgress(){
+ let total=0,done=0,by={JPT:[0,0],TOEIC:[0,0],'한능검':[0,0]};
+ for(let cur=parse(START);cur<=parse(END);cur.setDate(cur.getDate()+1)){
+  const ds=iso(cur);getTasks(ds).forEach((t,i)=>{total++;by[t.subject][1]++;if(checks[`${ds}_${i}`]){done++;by[t.subject][0]++;}});
+ }
+ $('total-done').textContent=done;$('total-tasks').textContent=total;$('completion').textContent=(total?Math.round(done/total*100):0)+'%';$('overall-progress').style.width=(total?done/total*100:0)+'%';
+ $('subject-progress').innerHTML=Object.entries(by).map(([name,v])=>`<div style="margin-top:16px"><div class="row"><b>${name}</b><span class="muted">${v[0]}/${v[1]} 완료</span></div><div class="progress"><div style="width:${v[1]?v[0]/v[1]*100:0}%"></div></div></div>`).join('');
+}
+function renderDDays(){
+ const today=todayISO();
+ [['jpt-dday',EXAMS.jpt],['toeic-dday',EXAMS.toeic],['hist-dday',EXAMS.hist]].forEach(([id,date])=>{
+  const n=diff(today,date);$(id).textContent=n===0?'D-DAY':n>0?'D-'+n:'종료';
+ });
+}
+function renderAll(){renderToday();renderCalendar();renderAlarms();renderProgress();renderDDays();}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab));
+}));
+$('todaydate').addEventListener('change',e=>{selected=clampDate(e.target.value);renderToday()});
+$('prevday').onclick=()=>{selected=clampDate(iso(new Date(parse(selected).getTime()-86400000)));renderToday()};
+$('nextday').onclick=()=>{selected=clampDate(iso(new Date(parse(selected).getTime()+86400000)));renderToday()};
+$('reset-day').onclick=()=>{getTasks(selected).forEach((t,i)=>delete checks[`${selected}_${i}`]);localStorage.setItem('studyChecks',JSON.stringify(checks));renderAll()};
+$('caldate').value=selected;$('caldate').addEventListener('change',renderCalendar);
+$('cal-prev').onclick=()=>{$('caldate').value=clampDate(iso(new Date(parse($('caldate').value).getTime()-86400000)));renderCalendar()};
+$('cal-next').onclick=()=>{$('caldate').value=clampDate(iso(new Date(parse($('caldate').value).getTime()+86400000)));renderCalendar()};
+$('enable-notify').onclick=async()=>{
+ if(!('Notification'in window)){alert('이 브라우저는 알림을 지원하지 않습니다.');return}
+ const p=await Notification.requestPermission();$('permission-status').textContent='알림 권한: '+p;
+ if(p==='granted')notify('알림 설정 완료','Study Alarm 알림이 설정되었습니다.');
+};
+$('save-alarms').onclick=()=>{
+ alarms=alarms.map((a,i)=>({...a,time:document.querySelector(`[data-time="${i}"]`).value,enabled:document.querySelector(`[data-enabled="${i}"]`).checked}));
+ localStorage.setItem('studyAlarms',JSON.stringify(alarms));renderAll();alert('알람 설정을 저장했어요.');
+};
+$('test-alarm').onclick=()=>notify('Study Alarm 테스트','알림이 정상적으로 표시되는지 확인하세요.');
+$('export-data').onclick=()=>{
+ const blob=new Blob([JSON.stringify({checks,alarms},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='study-alarm-backup.json';a.click();URL.revokeObjectURL(url);
+};
+$('clear-data').onclick=()=>{if(confirm('모든 학습 체크 기록을 삭제할까요?')){checks={};localStorage.removeItem('studyChecks');renderAll()}};
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+renderAll();setInterval(checkAlarms,15000);setInterval(updateNextAlarm,60000);
+</script>
+</body></html>
